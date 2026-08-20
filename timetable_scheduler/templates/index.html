@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Timetable Scheduler</title>
+    <style>
+    /* ================================================================
+       Teacher Timetable Scheduler - Stylesheet (self-contained)
+       ================================================================ */
+    :root {
+        --bg: #f1f5f9;
+        --surface: #ffffff;
+        --text: #0f172a;
+        --muted: #64748b;
+        --primary: #2563eb;
+        --accent: #0ea5e9;
+        --success: #10b981;
+        --danger: #ef4444;
+        --border: #e2e8f0;
+        --shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+        --radius: 14px;
+        --font: ui-sans-serif, system-ui, "Segoe UI", "Noto Sans Thai", "Sarabun", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+    }
+
+    .app {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 28px 20px 60px;
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 28px;
+    }
+
+    .header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.4px;
+    }
+
+    .header p {
+        margin: 8px 0 0;
+        color: var(--muted);
+    }
+
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 24px;
+        box-shadow: var(--shadow);
+        margin-bottom: 24px;
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+    }
+
+    .badge {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: var(--primary);
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 999px;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        margin-bottom: 16px;
+    }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        flex: 1 1 160px;
+        min-width: 130px;
+    }
+
+    .field.narrow {
+        flex: 0 0 90px;
+        min-width: 70px;
+    }
+
+    .field label {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .field input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        background: #f8fafc;
+        font-size: 14px;
+    }
+
+    .field input:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        padding: 10px 16px;
+        border-radius: 8px;
+        background: var(--primary);
+        color: #fff;
+        transition: transform .06s ease, background .15s ease;
+    }
+
+    .btn:hover { background: #1d4ed8; }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+        opacity: 0.8;
+    }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #0f172a;
+    }
+
+    .btn-secondary:hover {
+        background: #cbd5e1;
+    }
+
+    .btn-accent {
+        background: linear-gradient(135deg, var(--accent), var(--primary));
+        color: #fff;
+        box-shadow: 0 6px 18px rgba(14, 165, 233, 0.25);
+    }
+
+    .btn-accent:hover {
+        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.3);
+        filter: brightness(1.05);
+    }
+
+    .btn-danger {
+        background: transparent;
+        color: var(--danger);
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .btn-danger:hover { background: #fef2f2; }
+
+    .table-wrap {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        max-height: 340px;
+        overflow-y: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    thead th {
+        position: sticky;
+        top: 0;
+        background: #f8fafc;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 10px 14px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+    }
+
+    tbody td {
+        padding: 10px 14px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    tbody tr:hover { background: #f8fafc; }
+
+    .empty {
+        text-align: center;
+        padding: 36px 20px;
+        color: var(--muted);
+        font-style: italic;
+    }
+
+    .actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+    }
+
+    .meta {
+        color: var(--muted);
+        font-size: 14px;
+    }
+
+    .meta strong {
+        color: var(--text);
+        font-size: 18px;
+        margin-left: 4px;
+    }
+
+    .loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 36px 0;
+    }
+
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid var(--border);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.75s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-box {
+        background: #fff1f2;
+        color: #9f1239;
+        border: 1px solid #fecdd3;
+        border-radius: 10px;
+        padding: 14px 18px;
+        font-size: 14px;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .results {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .teacher-card {
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+    }
+
+    .teacher-card h3 {
+        margin: 0 0 14px;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--accent), var(--primary));
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.5px;
+    }
+
+    .calendar {
+        display: grid;
+        grid-template-columns: 68px repeat(5, minmax(0, 1fr));
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .calendar .day-header {
+        background: var(--primary);
+        color: #fff;
+        padding: 10px 8px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .calendar .period-label {
+        background: #f1f5f9;
+        color: var(--muted);
+        font-weight: 700;
+        font-size: 12px;
+        text-align: center;
+        padding: 10px 6px;
+        border-right: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .calendar .cell {
+        border-right: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        min-height: 54px;
+        padding: 8px 10px;
+        font-size: 13px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+
+    .calendar .cell.filled {
+        background: #eff6ff;
+        color: #1e3a8a;
+        font-weight: 700;
+        border-left: 3px solid var(--primary);
+    }
+
+    .calendar .cell.filled::after {
+        content: "";
+        position: absolute;
+        top: 6px;
+        right: 8px;
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: var(--primary);
+        opacity: 0.35;
+    }
+
+    .footnote {
+        margin-top: 8px;
+        text-align: right;
+        font-size: 12px;
+        color: var(--muted);
+    }
+
+    .hidden { display: none !important; }
+
+    /* ---------------- Official Thai-style timetable ---------------- */
+
+    .school-header-official {
+        text-align: center;
+        margin-bottom: 18px;
+    }
+
+    .school-header-official h2 {
+        margin: 0 0 6px;
+        font-size: 1.35rem;
+        font-weight: 800;
+    }
+
+    .school-header-official p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+    }
+
+    .official-timetable-wrap {
+        overflow-x: auto;
+        border-radius: 10px;
+        padding: 14px;
+        background: #fff;
+        border: 1px solid var(--border);
+    }
+
+    table.official-timetable {
+        table-layout: fixed;
+        border-collapse: collapse;
+        width: 100%;
+        min-width: 760px;
+        font-size: 12.5px;
+        border: 2px solid #0f172a;
+    }
+
+    table.official-timetable th,
+    table.official-timetable td {
+        border: 1px solid #0f172a;
+        padding: 6px 8px;
+        text-align: center;
+        vertical-align: middle;
+        overflow-wrap: break-word;
+    }
+
+    /* Every body row — whether it has a subject in it or is completely
+       empty — gets the same minimum height, so a day with no classes
+       doesn't render as a thinner row than a day with classes. */
+    table.official-timetable tbody td {
+        height: 64px;
+    }
+
+    /* First column (วัน) stays narrow and fixed; every remaining period
+       column shares the rest of the width equally. */
+    table.official-timetable th:first-child,
+    table.official-timetable td.day-cell {
+        width: 64px;
+    }
+
+    table.official-timetable thead th {
+        background: #f1f5f9;
+        font-weight: 700;
+        font-size: 12px;
+    }
+
+    table.official-timetable td.day-cell {
+        font-weight: 800;
+        background: #f8fafc;
+        white-space: nowrap;
+    }
+
+    table.official-timetable td.filled-cell {
+        background: #eff6ff;
+    }
+
+    table.official-timetable td.empty-cell {
+        background: #fafafa;
+    }
+
+    table.official-timetable th.lunch-th,
+    table.official-timetable td.lunch-cell {
+        background: #f1f5f9;
+        color: var(--muted);
+        font-weight: 700;
+    }
+
+    table.official-timetable .subject-title {
+        font-weight: 800;
+        font-size: 13px;
+        color: #1e3a8a;
+    }
+
+    table.official-timetable .subject-meta {
+        font-size: 11px;
+        color: #475569;
+        margin-top: 1px;
+    }
+
+    table.official-timetable .slot-sep {
+        border-top: 1px dashed #cbd5e1;
+        margin-top: 4px;
+        padding-top: 4px;
+    }
+
+    .official-footnote {
+        margin-top: 14px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--muted);
+        font-style: italic;
+    }
+
+    .class-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+
+    .class-tab-btn {
+        border: 1.5px solid var(--border);
+        background: #fff;
+        color: var(--text);
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all .15s ease;
+    }
+
+    .class-tab-btn:hover { background: #f1f5f9; }
+
+    .class-tab-btn.active {
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+    }
+
+    @media print {
+        body { background: #fff; }
+        .card { box-shadow: none; border: 1px solid #e2e8f0; }
+        .btn, .form-row, .table-wrap, .actions { display: none !important; }
+        #phase-input { display: none !important; }
+        #phase-output { display: block !important; }
+        .view-toggle { display: none !important; }
+    }
+
+    @media (max-width: 900px) {
+        .calendar {
+            grid-template-columns: 52px repeat(5, minmax(0, 1fr));
+            font-size: 12px;
+        }
+        .calendar .cell {
+            min-height: 44px;
+            padding: 6px 8px;
+        }
+        .header h1 { font-size: 1.45rem; }
+    }
+    </style>
+</head>
+<body>
+    <div class="app">
+
+        <div class="header">
+            <h1>📘 Teacher Timetable Scheduler</h1>
+            <p>Just enter teacher + subject + weekly hours — it schedules the rest.</p>
+        </div>
+
+        <!-- INPUT PHASE -->
+        <div id="phase-input" class="card">
+            <div class="card-header">
+                <h2>Teacher Assignments</h2>
+                <span class="badge">Step 1 of 2</span>
+            </div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label for="t">Teacher</label>
+                    <input type="text" id="t" placeholder="e.g. ครูชลธิมา" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="s">Subject</label>
+                    <input type="text" id="s" placeholder="e.g. ภาษาไทย" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="cls">Class</label>
+                    <input type="text" id="cls" placeholder="e.g. ม.2/1, ปวช.3 ช่างไฟฟ้า" autocomplete="off">
+                </div>
+                <div class="field narrow">
+                    <label for="room">Room</label>
+                    <input type="text" id="room" placeholder="2301" autocomplete="off">
+                </div>
+                <div class="field narrow">
+                    <label for="h">Hours/week</label>
+                    <input type="number" id="h" min="1" max="30" value="1">
+                </div>
+                <button id="add-btn" class="btn">+ Add</button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Teacher</th>
+                            <th>Subject</th>
+                            <th>Class</th>
+                            <th>Room</th>
+                            <th>Hours</th>
+                            <th style="text-align:right"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="entries"></tbody>
+                </table>
+                <div id="empty" class="empty">No entries yet. Add a teacher, subject, and hours to get started.</div>
+            </div>
+
+            <div class="actions">
+                <div class="meta">Weekly load <strong id="total">0</strong></div>
+                <button id="generate-btn" class="btn btn-accent" disabled>⚡ Auto-Generate Timetable</button>
+            </div>
+
+            <div style="margin-top:18px; border-top:1px solid var(--border); padding-top:18px;">
+                <h3 style="margin:0 0 12px; font-size:0.95rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px;">School / Class Info (on printed timetable)</h3>
+                <div class="form-row">
+                    <div class="field">
+                        <label for="si-room">Room</label>
+                        <input type="text" id="si-room" value="2301" placeholder="2301">
+                    </div>
+                    <div class="field">
+                        <label for="si-semester">Semester</label>
+                        <input type="text" id="si-semester" value="1" placeholder="1">
+                    </div>
+                    <div class="field">
+                        <label for="si-year">Year</label>
+                        <input type="text" id="si-year" value="2568" placeholder="2568">
+                    </div>
+                    <div class="field">
+                        <label for="si-advisor1">Homeroom teacher 1</label>
+                        <input type="text" id="si-advisor1" value="ครูชัชรินทร์ กงเพชร">
+                    </div>
+                    <div class="field">
+                        <label for="si-advisor2">Homeroom teacher 2</label>
+                        <input type="text" id="si-advisor2" value="ครูชลธิมา พุฒาอามาตย์">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OUTPUT PHASE -->
+        <div id="phase-output" class="card hidden">
+            <div class="card-header">
+                <h2>Generated Timetable</h2>
+                <span class="badge">Step 2 of 2</span>
+            </div>
+
+            <div id="loading" class="loading hidden">
+                <div class="spinner"></div>
+                <p style="color: var(--muted)">Building the best schedule…</p>
+            </div>
+
+            <div id="error-box" class="error-box hidden"></div>
+
+            <div class="view-toggle" style="display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px;">
+                <button id="view-student" class="btn btn-accent">ตารางเรียนนักเรียน</button>
+                <button id="view-teacher" class="btn btn-secondary">ตารางครูรายบุคคล</button>
+            </div>
+
+            <div id="student-view">
+                <div id="class-tabs" class="class-tabs hidden"></div>
+                <div id="school-header" class="school-header-official"></div>
+                <div class="official-timetable-wrap">
+                    <table class="official-timetable" id="official-table"></table>
+                </div>
+                <div class="official-footnote">ตารางนี้สร้างขึ้นโดยอัตโนมัติจากข้อมูลที่กรอกไว้ — ตรวจสอบความถูกต้องก่อนใช้งานจริง</div>
+            </div>
+
+            <div id="results" class="results hidden"></div>
+
+            <button id="reset-btn" class="btn btn-secondary" style="margin-top: 20px;">← Start Over</button>
+        </div>
+
+    </div>
+
+    <script>
+    (() => {
+        'use strict';
+
+        const els = {
+            t: document.getElementById('t'),
+            s: document.getElementById('s'),
+            cls: document.getElementById('cls'),
+            room: document.getElementById('room'),
+            h: document.getElementById('h'),
+            addBtn: document.getElementById('add-btn'),
+            entries: document.getElementById('entries'),
+            empty: document.getElementById('empty'),
+            total: document.getElementById('total'),
+            gen: document.getElementById('generate-btn'),
+            inPhase: document.getElementById('phase-input'),
+            outPhase: document.getElementById('phase-output'),
+            loading: document.getElementById('loading'),
+            error: document.getElementById('error-box'),
+            results: document.getElementById('results'),
+            studentView: document.getElementById('student-view'),
+            classTabs: document.getElementById('class-tabs'),
+            officialTable: document.getElementById('official-table'),
+            viewTeacherBtn: document.getElementById('view-teacher'),
+            viewStudentBtn: document.getElementById('view-student'),
+            reset: document.getElementById('reset-btn'),
+            schoolHeader: document.getElementById('school-header'),
+            siRoom: document.getElementById('si-room'),
+            siSemester: document.getElementById('si-semester'),
+            siYear: document.getElementById('si-year'),
+            siAdvisor1: document.getElementById('si-advisor1'),
+            siAdvisor2: document.getElementById('si-advisor2'),
+        };
+
+        let assignments = [];
+
+        // Multi-class result state, populated after a successful generate().
+        let currentClassOrder = [];
+        let currentTimetableByClass = {};
+        let currentClass = null;
+
+        // Period times — locked to fixed, clean 1-hour slots from 08.00
+        // to 18.00. Period index 4 (12.00-13.00) is reserved as lunch
+        // break. Period index 9 (17.00-18.00) is past the students'
+        // normal study hours, so it is also never scheduled into — it
+        // stays visible as a column in the table, but always empty.
+        const TIMES = [
+            '08.00-09.00 น.', '09.00-10.00 น.', '10.00-11.00 น.', '11.00-12.00 น.',
+            '12.00-13.00 น.', '13.00-14.00 น.', '14.00-15.00 น.', '15.00-16.00 น.',
+            '16.00-17.00 น.', '17.00-18.00 น.'
+        ];
+        const PERIODS = TIMES.length; // 10
+        const LUNCH_INDEX = 4; // คาบพักกลางวัน (not schedulable)
+        const AFTER_HOURS_INDEX = PERIODS - 1; // 17.00-18.00 น. — เลยเวลาเรียนของนักศึกษา (not schedulable, shown empty)
+        const DAYS = 5;
+        const DAY_NAMES_TH = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์'];
+
+        const hours = () => assignments.reduce((s, a) => s + (a.hours || 0), 0);
+
+        const esc = (str) =>
+            String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
+        const updateTable = () => {
+            const t = hours();
+            els.total.textContent = t;
+            els.gen.disabled = t === 0;
+
+            if (!assignments.length) {
+                els.empty.classList.remove('hidden');
+                els.entries.innerHTML = '';
+                return;
+            }
+
+            els.empty.classList.add('hidden');
+            els.entries.innerHTML = assignments
+                .map(
+                    (a, i) => `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${esc(a.teacher)}</td>
+                    <td>${esc(a.subject)}</td>
+                    <td>${esc(a.cls)}</td>
+                    <td>${esc(a.room || '-')}</td>
+                    <td>${a.hours}</td>
+                    <td style="text-align:right">
+                        <button class="btn btn-danger" data-i="${i}">Remove</button>
+                    </td>
+                </tr>
+            `
+                )
+                .join('');
+        };
+
+        const clearInputs = () => {
+            els.t.value = '';
+            els.s.value = '';
+            els.cls.value = '';
+            els.room.value = '';
+            els.h.value = '1';
+            els.t.focus();
+        };
+
+        const add = () => {
+            const t = els.t.value.trim();
+            const s = els.s.value.trim();
+            const cls = els.cls.value.trim();
+            const room = els.room.value.trim();
+            const h = parseInt(els.h.value, 10);
+
+            if (!t || !s || !cls || isNaN(h) || h < 1) {
+                alert('Please enter teacher, subject, class (e.g. ม.2/1), and hours (≥1).');
+                return;
+            }
+
+            assignments.push({ teacher: t, subject: s, cls, room, hours: h });
+            clearInputs();
+            updateTable();
+        };
+
+        const remove = (i) => {
+            assignments.splice(i, 1);
+            updateTable();
+        };
+
+        const lock = () => {
+            els.addBtn.disabled = true;
+            els.addBtn.textContent = 'Locked';
+        };
+
+        const switchToResult = () => {
+            els.inPhase.classList.add('hidden');
+            els.outPhase.classList.remove('hidden');
+            els.results.innerHTML = '';
+            els.error.classList.add('hidden');
+            els.loading.classList.remove('hidden');
+        };
+
+        const switchToInput = () => {
+            els.outPhase.classList.add('hidden');
+            els.inPhase.classList.remove('hidden');
+            els.addBtn.disabled = false;
+            els.addBtn.textContent = '+ Add';
+            els.entries.querySelectorAll('button').forEach((b) => (b.disabled = false));
+            ['t', 's', 'cls', 'room', 'h'].forEach((k) => (els[k].disabled = false));
+            assignments = [];
+            currentClassOrder = [];
+            currentTimetableByClass = {};
+            currentClass = null;
+            updateTable();
+            els.error.classList.add('hidden');
+        };
+
+        // Builds the <thead>/<tbody> markup for an official Thai-style
+        // timetable: days as rows, periods as columns, a merged พักกลางวัน
+        // column at the lunch period, and an optional โฮมรูม column.
+        // `items` should already be filtered to whatever scope is needed
+        // (the whole class, or a single teacher).
+        const officialTableMarkup = (items, periods, { cellContent } = {}) => {
+            const grid = Array.from({ length: DAYS }, () => Array.from({ length: periods }, () => []));
+            items.forEach((item) => {
+                if (item.period === LUNCH_INDEX || item.period === AFTER_HOURS_INDEX) return;
+                grid[item.day][item.period].push(item);
+            });
+
+            // Every period gets its own equally-sized column, including
+            // the lunch break — so the time gap is visible instead of
+            // jumping straight from the morning to the afternoon. Real
+            // teaching periods are numbered 1, 2, 3…; the lunch column
+            // is labeled "พัก" instead of a period number. The last
+            // column (17.00-18.00) still gets a normal period number and
+            // stays visible, but is never populated since it's past the
+            // students' study hours.
+            let numberHeader = '';
+            let timeHeader = '';
+            let seq = 0;
+            for (let p = 0; p < periods; p++) {
+                if (p === LUNCH_INDEX) {
+                    numberHeader += `<th class="lunch-th">พัก</th>`;
+                    timeHeader += `<th class="lunch-th">${TIMES[p]}</th>`;
+                } else {
+                    seq++;
+                    numberHeader += `<th>${seq}</th>`;
+                    timeHeader += `<th>${TIMES[p]}</th>`;
+                }
+            }
+
+            const leadHeaderCells = `<th rowspan="2">วัน</th>`;
+
+            // Builds a comparison key for a period's slot contents so that
+            // consecutive periods holding the exact same lesson (same
+            // teacher + subject + room) can be detected and merged into a
+            // single spanning cell. Empty slots — including the lunch
+            // period and the after-hours period, which are never
+            // populated — have no key (null) and are never merged with
+            // anything, which also means a merge run naturally stops at
+            // those columns without any extra special-casing.
+            const slotKey = (slotItems) =>
+                slotItems.length
+                    ? slotItems.map((x) => `${x.teacher}|${x.subject}|${x.room}|${x.cls || ''}`).join(';')
+                    : null;
+
+            let bodyRows = '';
+            for (let d = 0; d < DAYS; d++) {
+                let cells = '';
+
+                let p = 0;
+                while (p < periods) {
+                    const slotItems = grid[d][p];
+                    const key = slotKey(slotItems);
+
+                    if (!key) {
+                        cells += `<td class="empty-cell${p === LUNCH_INDEX ? ' lunch-cell' : ''}"></td>`;
+                        p++;
+                        continue;
+                    }
+
+                    // Look ahead across consecutive periods to see how
+                    // many share this exact same lesson, so the whole run
+                    // renders as one cell with no internal borders. A
+                    // different subject/teacher/room breaks the run
+                    // immediately — as does hitting the lunch column,
+                    // since it's always empty.
+                    let span = 1;
+                    while (p + span < periods && slotKey(grid[d][p + span]) === key) {
+                        span++;
+                    }
+
+                    const inner = slotItems
+                        .map((x, idx) => `<div class="${idx > 0 ? 'slot-sep' : ''}">${cellContent(x)}</div>`)
+                        .join('');
+                    cells += `<td class="filled-cell"${span > 1 ? ` colspan="${span}"` : ''}>${inner}</td>`;
+
+                    p += span;
+                }
+
+                bodyRows += `<tr><td class="day-cell">${DAY_NAMES_TH[d]}</td>${cells}</tr>`;
+            }
+
+            return `
+                <thead>
+                    <tr>${leadHeaderCells}${numberHeader}</tr>
+                    <tr>${timeHeader}</tr>
+                </thead>
+                <tbody>${bodyRows}</tbody>
+            `;
+        };
+
+        // Renders one official-style table per teacher, showing only that
+        // teacher's own subject/room in each slot (no need for a teacher
+        // line since the whole table already belongs to them).
+        const renderCalendar = (tt, periods) => {
+            const by = {};
+            tt.forEach((x) => {
+                (by[x.teacher] ||= []).push(x);
+            });
+
+            let html = '';
+            Object.keys(by)
+                .sort()
+                .forEach((teacher) => {
+                    const items = by[teacher];
+                    const ini = teacher
+                        .split(/\s+/)
+                        .map((w) => w[0])
+                        .slice(0, 2)
+                        .join('')
+                        .toUpperCase();
+
+                    const tableHtml = officialTableMarkup(items, periods, {
+                        cellContent: (x) => `
+                            <div class="subject-title">${esc(x.subject)}</div>
+                            <div class="subject-meta">${esc(x.cls)}${x.room ? ' · ' + esc(x.room) : ''}</div>
+                        `,
+                    });
+
+                    html += `
+                <div class="teacher-card">
+                  <h3><span class="avatar">${ini}</span>${esc(teacher)}</h3>
+                  <div class="official-timetable-wrap">
+                    <table class="official-timetable">${tableHtml}</table>
+                  </div>
+                  <div class="footnote">${items.length} period${items.length > 1 ? 's' : ''} · auto-scheduled across the week</div>
+                </div>
+              `;
+                });
+
+            els.results.innerHTML = html || '<div class="error-box">No schedule generated.</div>';
+        };
+
+        // Renders the official Thai-style student timetable: days as rows,
+        // teaching periods (lunch break excluded) as evenly-sized columns.
+        const renderOfficialTable = (tt, periods) => {
+            els.officialTable.innerHTML = officialTableMarkup(tt, periods, {
+                cellContent: (x) => `
+                    <div class="subject-title">${esc(x.subject)}</div>
+                    <div class="subject-meta">${esc(x.teacher)}</div>
+                    ${x.room ? `<div class="subject-meta">${esc(x.room)}</div>` : ''}
+                `,
+            });
+        };
+
+        const renderSchoolHeader = (cls) => {
+            const room = els.siRoom.value.trim() || '-';
+            const sem = els.siSemester.value.trim() || '-';
+            const year = els.siYear.value.trim() || '-';
+            const adv1 = els.siAdvisor1.value.trim();
+            const adv2 = els.siAdvisor2.value.trim();
+
+            const advisors = [adv1, adv2].filter(Boolean);
+            const advisorText = advisors.length
+                ? 'ครูที่ปรึกษา ' + advisors.map((a, i) => `${i + 1}. ${esc(a)}`).join('  ')
+                : '';
+
+            els.schoolHeader.innerHTML = `
+                <h2>ตารางเรียนนักเรียนชั้น ${esc(cls)} ภาคเรียนที่ ${esc(sem)} ปีการศึกษา ${esc(year)}</h2>
+                <p>เรียนประจำห้อง ${esc(room)}${advisorText ? '  ' + advisorText : ''}</p>
+            `;
+        };
+
+        // Renders the tab bar for switching between classes in the student
+        // view. Only shown when there is more than one class in the result.
+        const renderClassTabs = () => {
+            if (currentClassOrder.length <= 1) {
+                els.classTabs.innerHTML = '';
+                els.classTabs.classList.add('hidden');
+                return;
+            }
+            els.classTabs.classList.remove('hidden');
+            els.classTabs.innerHTML = currentClassOrder
+                .map(
+                    (cls) =>
+                        `<button type="button" class="class-tab-btn${cls === currentClass ? ' active' : ''}" data-cls="${esc(cls)}">${esc(cls)}</button>`
+                )
+                .join('');
+        };
+
+        // Renders the school header + official table for whichever class
+        // is currently selected in the tab bar.
+        const renderSelectedClass = (periods) => {
+            const items = currentTimetableByClass[currentClass] || [];
+            renderSchoolHeader(currentClass);
+            renderOfficialTable(items, periods);
+        };
+
+        // Entry point after a successful generate(): stores the per-class
+        // results, selects the first class by default, and renders it.
+        const renderStudentViews = (classOrder, timetableByClass, periods) => {
+            currentClassOrder = classOrder;
+            currentTimetableByClass = timetableByClass;
+            currentClass = classOrder[0];
+            renderClassTabs();
+            renderSelectedClass(periods);
+        };
+
+        const switchView = (mode) => {
+            if (mode === 'teacher') {
+                els.results.classList.remove('hidden');
+                els.studentView.classList.add('hidden');
+                els.viewTeacherBtn.classList.add('btn-accent');
+                els.viewTeacherBtn.classList.remove('btn-secondary');
+                els.viewStudentBtn.classList.remove('btn-accent');
+                els.viewStudentBtn.classList.add('btn-secondary');
+            } else {
+                els.results.classList.add('hidden');
+                els.studentView.classList.remove('hidden');
+                els.viewStudentBtn.classList.add('btn-accent');
+                els.viewStudentBtn.classList.remove('btn-secondary');
+                els.viewTeacherBtn.classList.remove('btn-accent');
+                els.viewTeacherBtn.classList.add('btn-secondary');
+            }
+        };
+
+        /**
+         * Client-side scheduler — no backend required.
+         * Assignments are grouped by class, and each class gets its own
+         * timetable (a given class can only have one subject in a given
+         * day+period). Classes are scheduled one at a time, in the order
+         * they first appear among the entries; within a class, subjects
+         * are placed in entry order, always into the earliest free spot
+         * — starting Monday period 1 — with each subject's hours landing
+         * next to each other (contiguous periods).
+         *
+         * A single teacher's occupancy is tracked *across* all classes
+         * (shared, not per-class), so the same teacher can never be
+         * scheduled to teach two different classes at the same day+period.
+         * The lunch period and the after-hours period (17.00-18.00) are
+         * never scheduled into for anyone.
+         *
+         * Returns { classOrder, timetableByClass } where classOrder is the
+         * list of class names in first-seen order and timetableByClass
+         * maps each class name to its own list of scheduled items.
+         */
+        const buildTimetable = (assignments, periodsPerDay) => {
+            // Split the day into contiguous period runs, broken by lunch
+            // and by the after-hours period at the end of the day (past
+            // the students' normal study hours). That last period still
+            // shows up as a column in the rendered table, but no
+            // assignment is ever placed into it.
+            const BREAK_INDICES = new Set([LUNCH_INDEX, AFTER_HOURS_INDEX]);
+            const segments = [];
+            let current = [];
+            for (let p = 0; p < periodsPerDay; p++) {
+                if (BREAK_INDICES.has(p)) {
+                    if (current.length) segments.push(current);
+                    current = [];
+                } else {
+                    current.push(p);
+                }
+            }
+            if (current.length) segments.push(current);
+
+            const slotsPerDay = segments.reduce((s, seg) => s + seg.length, 0);
+            const totalSlotsPerClass = slotsPerDay * DAYS;
+
+            // Group assignments by class, preserving first-seen class
+            // order and the original entry order within each class.
+            const classOrder = [];
+            const byClass = {};
+            assignments.forEach((a) => {
+                const key = a.cls || 'ไม่ระบุชั้น';
+                if (!byClass[key]) {
+                    byClass[key] = [];
+                    classOrder.push(key);
+                }
+                byClass[key].push(a);
+            });
+
+            // A class's own weekly hours can never exceed the slots
+            // available to that class in a week, regardless of what other
+            // classes need.
+            classOrder.forEach((cls) => {
+                const totalRequested = byClass[cls].reduce((s, a) => s + a.hours, 0);
+                if (totalRequested > totalSlotsPerClass) {
+                    throw new Error(
+                        `ชั้น ${cls} ต้องการทั้งหมด ${totalRequested} คาบ/สัปดาห์ แต่มีคาบว่างเพียง ${totalSlotsPerClass} คาบ ` +
+                        `(${DAYS} วัน × ${slotsPerDay} คาบ ไม่รวมพักกลางวันและช่วงเวลาเลิกเรียน) ลดจำนวนชั่วโมงลง`
+                    );
+                }
+            });
+
+            // Shared across all classes: a teacher cannot teach two
+            // classes at the same day+period.
+            const teacherOccupied = {};
+            const teacherGrid = (teacher) => {
+                if (!teacherOccupied[teacher]) {
+                    teacherOccupied[teacher] = Array.from({ length: DAYS }, () => Array(periodsPerDay).fill(false));
+                }
+                return teacherOccupied[teacher];
+            };
+
+            // Free runs are collected day-by-day (Monday first) and, within
+            // a day, period-by-period starting at period 1 — so the very
+            // first run returned is always the earliest open slot in the
+            // week. A period only counts as free if it's open both for
+            // this class and for this particular teacher.
+            const findFreeRuns = (classOccupied, tGrid) => {
+                const runs = [];
+                for (let d = 0; d < DAYS; d++) {
+                    segments.forEach((seg) => {
+                        let start = -1;
+                        for (let i = 0; i <= seg.length; i++) {
+                            const free = i < seg.length && !classOccupied[d][seg[i]] && !tGrid[d][seg[i]];
+                            if (free) {
+                                if (start === -1) start = i;
+                            } else if (start !== -1) {
+                                runs.push({ day: d, periods: seg.slice(start, i) });
+                                start = -1;
+                            }
+                        }
+                    });
+                }
+                return runs;
+            };
+
+            const timetableByClass = {};
+
+            classOrder.forEach((cls) => {
+                const classOccupied = Array.from({ length: DAYS }, () => Array(periodsPerDay).fill(false));
+                const timetable = [];
+
+                byClass[cls].forEach((a) => {
+                    const tGrid = teacherGrid(a.teacher);
+                    let remaining = a.hours;
+                    let guard = 0;
+
+                    while (remaining > 0) {
+                        guard += 1;
+                        if (guard > 500) {
+                            throw new Error(`จัดตารางให้ ${a.teacher} (${a.subject}, ชั้น ${cls}) ไม่สำเร็จ ลองลดจำนวนชั่วโมงลง`);
+                        }
+
+                        const runs = findFreeRuns(classOccupied, tGrid);
+                        if (!runs.length) {
+                            throw new Error(
+                                `ไม่มีคาบว่างเหลือสำหรับ ${a.teacher} (${a.subject}, ชั้น ${cls}) — อาจเป็นเพราะครูคนนี้ ` +
+                                `ถูกจองสอนชั้นอื่นในทุกคาบที่เหลือแล้ว`
+                            );
+                        }
+
+                        // Prefer the earliest run that can fit all
+                        // remaining hours in one contiguous block;
+                        // otherwise take the earliest/largest run
+                        // available and continue placing the leftover
+                        // hours afterwards (still contiguous within that
+                        // run).
+                        const exactFit = runs.find((r) => r.periods.length >= remaining);
+                        let chosen;
+                        let useLength;
+                        if (exactFit) {
+                            chosen = exactFit;
+                            useLength = remaining;
+                        } else {
+                            useLength = Math.max(...runs.map((r) => r.periods.length));
+                            chosen = runs.find((r) => r.periods.length === useLength);
+                        }
+
+                        const block = chosen.periods.slice(0, useLength);
+
+                        block.forEach((p) => {
+                            classOccupied[chosen.day][p] = true;
+                            tGrid[chosen.day][p] = true;
+                            timetable.push({
+                                teacher: a.teacher,
+                                subject: a.subject,
+                                room: a.room,
+                                cls,
+                                day: chosen.day,
+                                period: p,
+                            });
+                        });
+
+                        remaining -= useLength;
+                    }
+                });
+
+                timetableByClass[cls] = timetable;
+            });
+
+            return { classOrder, timetableByClass };
+        };
+
+        const generate = () => {
+            if (!hours()) return;
+
+            lock();
+            switchToResult();
+
+            setTimeout(() => {
+                try {
+                    const { classOrder, timetableByClass } = buildTimetable(assignments, PERIODS);
+
+                    renderStudentViews(classOrder, timetableByClass, PERIODS);
+
+                    const allItems = classOrder.flatMap((cls) => timetableByClass[cls]);
+                    renderCalendar(allItems, PERIODS);
+                    switchView('student');
+
+                    els.loading.classList.add('hidden');
+                } catch (err) {
+                    console.error(err);
+                    els.error.textContent = err.message || 'Unexpected error. Please try again.';
+                    els.error.classList.remove('hidden');
+                    els.loading.classList.add('hidden');
+                }
+            }, 350);
+        };
+
+        els.addBtn.addEventListener('click', add);
+        [els.t, els.s, els.cls, els.room, els.h].forEach((el) =>
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') add();
+            })
+        );
+        els.entries.addEventListener('click', (e) => {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            remove(parseInt(btn.dataset.i, 10));
+        });
+        els.gen.addEventListener('click', generate);
+        els.reset.addEventListener('click', switchToInput);
+        els.viewTeacherBtn.addEventListener('click', () => switchView('teacher'));
+        els.viewStudentBtn.addEventListener('click', () => switchView('student'));
+        els.classTabs.addEventListener('click', (e) => {
+            const btn = e.target.closest('.class-tab-btn');
+            if (!btn) return;
+            currentClass = btn.dataset.cls;
+            renderClassTabs();
+            renderSelectedClass(PERIODS);
+        });
+
+        updateTable();
+    })();
+    </script>
+</body>
+</html>
